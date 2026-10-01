@@ -32,6 +32,7 @@ if [ -d "$MODELS_DIR" ]; then
     download_if_missing "qwen2.5-coder-0.5b-q4_0.gguf" "https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-0.5b-instruct-q4_0.gguf"
     download_if_missing "qwen2.5-1.5b-q4_0.gguf" "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_0.gguf"
     download_if_missing "qwen2.5-coder-1.5b-q4_0.gguf" "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_0.gguf"
+    download_if_missing "smollm2-135m-q4_0.gguf" "https://huggingface.co/bartowski/SmolLM2-135M-Instruct-GGUF/resolve/main/SmolLM2-135M-Instruct-Q4_0.gguf"
 else
     echo "Warning: Models directory $MODELS_DIR does not exist. Skipping auto-download."
 fi
