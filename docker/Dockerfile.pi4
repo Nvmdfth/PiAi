@@ -40,10 +40,12 @@ RUN chmod +x /entrypoint.sh
 
 USER app
 
-# Server Binding
+# Multi-Model Router & Server Binding
 ENV LLAMA_ARG_HOST=0.0.0.0
 ENV LLAMA_ARG_PORT=8080
-ENV LLAMA_ARG_MODEL=/models/qwen2.5-0.5b-q4_0.gguf
+ENV LLAMA_ARG_MODELS_DIR=/models
+ENV LLAMA_ARG_MODELS_MAX=2
+ENV LLAMA_ARG_MODELS_AUTOLOAD=1
 
 # Performance Tuning Defaults
 ENV LLAMA_ARG_THREADS=3
