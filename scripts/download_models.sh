@@ -8,9 +8,9 @@ MODELS_DIR="${ROOT_DIR}/models"
 mkdir -p "${MODELS_DIR}"
 
 declare -A MODEL_URLS=(
-    ["smollm2-135m-q4_0"]="https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct-GGUF/resolve/main/smollm2-135m-instruct-q4_0.gguf"
-    ["smollm2-360m-q4_0"]="https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF/resolve/main/smollm2-360m-instruct-q4_0.gguf"
-    ["smollm2-1.7b-q4_0"]="https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/resolve/main/smollm2-1.7b-instruct-q4_0.gguf"
+    ["smollm2-135m-q4_0"]="https://huggingface.co/bartowski/SmolLM2-135M-Instruct-GGUF/resolve/main/SmolLM2-135M-Instruct-Q4_0.gguf"
+    ["smollm2-360m-q4_0"]="https://huggingface.co/bartowski/SmolLM2-360M-Instruct-GGUF/resolve/main/SmolLM2-360M-Instruct-Q4_0.gguf"
+    ["smollm2-1.7b-q4_0"]="https://huggingface.co/bartowski/SmolLM2-1.7B-Instruct-GGUF/resolve/main/SmolLM2-1.7B-Instruct-Q4_0.gguf"
     ["qwen2.5-0.5b-q4_0"]="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_0.gguf"
     ["qwen2.5-1.5b-q4_0"]="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_0.gguf"
     ["qwen2.5-3b-q4_0"]="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_0.gguf"
