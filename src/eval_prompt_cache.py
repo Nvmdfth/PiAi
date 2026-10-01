@@ -45,17 +45,17 @@ def check_binary():
         print(f"Error: llama-cli binary not found at {LLAMA_CLI}.", file=sys.stderr)
         sys.exit(1)
 
-def parse_llama_timings(stderr_text):
+def parse_llama_timings(output_text):
     prompt_ms = 0.0
     eval_ms = 0.0
     
     # prompt eval time = 1234.56 ms / 250 tokens
-    m_prompt = re.search(r"prompt eval time\s*=\s*([\d\.]+)\s*ms", stderr_text)
+    m_prompt = re.search(r"prompt eval time\s*=\s*([\d\.]+)\s*ms", output_text)
     if m_prompt:
         prompt_ms = float(m_prompt.group(1))
         
     # eval time = 567.89 ms / 64 runs
-    m_eval = re.search(r"eval time\s*=\s*([\d\.]+)\s*ms", stderr_text)
+    m_eval = re.search(r"eval time\s*=\s*([\d\.]+)\s*ms", output_text)
     if m_eval:
         eval_ms = float(m_eval.group(1))
         
@@ -87,13 +87,15 @@ def run_cache_benchmark(model_path, threads=3):
         "-n", "32",
         "-t", str(threads),
         "--no-display-prompt",
-        "--no-conversation"
+        "-st",
+        "--simple-io"
     ]
     
     start_cold = time.time()
     res_cold = subprocess.run(cmd_cold, stdin=subprocess.DEVNULL, capture_output=True, text=True)
     lat_cold = time.time() - start_cold
-    cold_prompt_ms, _ = parse_llama_timings(res_cold.stderr)
+    combined_cold = (res_cold.stdout or "") + "\n" + (res_cold.stderr or "")
+    cold_prompt_ms, _ = parse_llama_timings(combined_cold)
 
     # Run 2: Warm start (re-use cache with different user query)
     cmd_warm = [
@@ -104,13 +106,15 @@ def run_cache_benchmark(model_path, threads=3):
         "-n", "32",
         "-t", str(threads),
         "--no-display-prompt",
-        "--no-conversation"
+        "-st",
+        "--simple-io"
     ]
 
     start_warm = time.time()
     res_warm = subprocess.run(cmd_warm, stdin=subprocess.DEVNULL, capture_output=True, text=True)
     lat_warm = time.time() - start_warm
-    warm_prompt_ms, _ = parse_llama_timings(res_warm.stderr)
+    combined_warm = (res_warm.stdout or "") + "\n" + (res_warm.stderr or "")
+    warm_prompt_ms, _ = parse_llama_timings(combined_warm)
 
     speedup = round(lat_cold / lat_warm, 2) if lat_warm > 0 else 1.0
 

@@ -1,0 +1,54 @@
+services:
+  # Raspberry Pi 4 Profile
+  piai-pi4:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pi4
+    container_name: piai-engine
+    restart: unless-stopped
+    cpuset: "0-2"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ipc: host
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./models:/models:ro
+      - ./grammars:/grammars:ro
+    environment:
+      - MODEL_PATH=/models/qwen2.5-0.5b-q4_0.gguf
+      - THREADS=3
+      - CTX_SIZE=4096
+      - HOST=0.0.0.0
+      - PORT=8080
+    profiles:
+      - pi4
+
+  # Raspberry Pi 5 Profile (Target Production)
+  piai-pi5:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pi5
+    container_name: piai-engine
+    restart: unless-stopped
+    cpuset: "0-2"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ipc: host
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./models:/models:ro
+      - ./grammars:/grammars:ro
+    environment:
+      - MODEL_PATH=/models/qwen2.5-1.5b-q4_0.gguf
+      - THREADS=3
+      - CTX_SIZE=4096
+      - HOST=0.0.0.0
+      - PORT=8080
+    profiles:
+      - pi5

@@ -23,14 +23,24 @@ LLAMA_CLI = BIN_DIR / "llama-cli"
 
 TEST_PROMPT = "Write a Python function to compute the moving average of a streaming list of numbers, handling edge cases."
 
-def parse_tok_per_sec(stderr_text):
-    # eval time = 1234.56 ms / 64 runs ( 19.29 ms per token, 51.84 tokens per second)
-    m = re.search(r"eval time\s*=.*?([\d\.]+)\s*tokens per second", stderr_text)
+def parse_tok_per_sec(combined_text):
+    # common_perf_print: prompt eval time = ... tokens per second / eval time = ... tokens per second
+    # decoded 19 tokens in 9.030 seconds, speed: 2.104 t/s
+    m = re.search(r"decoded\s+\d+\s+tokens in\s+[\d\.]+\s+seconds,\s+speed:\s+([\d\.]+)\s+t/s", combined_text)
+    if m:
+        return float(m.group(1))
+    m2 = re.search(r"eval time\s*=.*?([\d\.]+)\s*tokens per second", combined_text)
+    if m2:
+        return float(m2.group(1))
+    return 0.0
+
+def parse_acceptance_rate(combined_text):
+    m = re.search(r"accept\s*=\s*([\d\.]+)%", combined_text)
     if m:
         return float(m.group(1))
     return 0.0
 
-def run_speculative_test(target_model, draft_model, draft_k=4, threads=3, n_tokens=64):
+def run_speculative_test(target_model, draft_model, draft_k=3, threads=3, n_tokens=32):
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     
     t_file = Path(target_model)
@@ -50,13 +60,15 @@ def run_speculative_test(target_model, draft_model, draft_k=4, threads=3, n_toke
         "-n", str(n_tokens),
         "-t", str(threads),
         "--no-display-prompt",
-        "--no-conversation"
+        "-st",
+        "--simple-io"
     ]
     
     start_base = time.time()
     res_base = subprocess.run(cmd_base, stdin=subprocess.DEVNULL, capture_output=True, text=True)
     lat_base = time.time() - start_base
-    base_tps = parse_tok_per_sec(res_base.stderr)
+    base_text = (res_base.stdout or "") + "\n" + (res_base.stderr or "")
+    base_tps = parse_tok_per_sec(base_text)
     if base_tps == 0.0 and lat_base > 0 and res_base.returncode == 0:
         base_tps = round(n_tokens / lat_base, 2)
 
@@ -65,22 +77,24 @@ def run_speculative_test(target_model, draft_model, draft_k=4, threads=3, n_toke
         str(LLAMA_SPECULATIVE),
         "-m", str(t_file),
         "-md", str(d_file),
+        "--spec-type", "draft-simple",
         "-p", TEST_PROMPT,
         "-n", str(n_tokens),
-        "-t", str(threads),
-        "--draft-max", str(draft_k)
+        "-t", str(threads)
     ]
     
     start_spec = time.time()
     res_spec = subprocess.run(cmd_spec, stdin=subprocess.DEVNULL, capture_output=True, text=True)
     lat_spec = time.time() - start_spec
-    spec_tps = parse_tok_per_sec(res_spec.stderr)
+    spec_text = (res_spec.stdout or "") + "\n" + (res_spec.stderr or "")
+    spec_tps = parse_tok_per_sec(spec_text)
+    accept_pct = parse_acceptance_rate(spec_text)
     if spec_tps == 0.0 and lat_spec > 0 and res_spec.returncode == 0:
         spec_tps = round(n_tokens / lat_spec, 2)
 
     speedup = round(spec_tps / base_tps, 2) if base_tps > 0 else 1.0
 
-    print(f"  Standalone: {base_tps} tok/s | Speculative: {spec_tps} tok/s | Speedup: {speedup}x")
+    print(f"  Standalone: {base_tps} tok/s | Speculative: {spec_tps} tok/s (Accept: {accept_pct}%) | Speedup: {speedup}x")
 
     return {
         "target_model": t_file.name,
@@ -91,6 +105,7 @@ def run_speculative_test(target_model, draft_model, draft_k=4, threads=3, n_toke
         "returncode_spec": res_spec.returncode,
         "baseline_tok_per_s": base_tps,
         "speculative_tok_per_s": spec_tps,
+        "acceptance_rate_pct": accept_pct,
         "speedup_factor": speedup
     }
 
@@ -98,7 +113,7 @@ def main():
     parser = argparse.ArgumentParser(description="Evaluate speculative decoding acceleration.")
     parser.add_argument("--target", help="Path to target model GGUF")
     parser.add_argument("--draft", help="Path to draft model GGUF")
-    parser.add_argument("--draft-k", type=int, default=4)
+    parser.add_argument("--draft-k", type=int, default=3)
     parser.add_argument("--threads", type=int, default=3)
     args = parser.parse_args()
 
@@ -110,7 +125,6 @@ def main():
     if args.target and args.draft:
         pairs.append((args.target, args.draft))
     else:
-        # Standard pairing candidates
         candidates = [
             (MODELS_DIR / "smollm2-1.7b-q4_0.gguf", MODELS_DIR / "smollm2-135m-q4_0.gguf"),
             (MODELS_DIR / "qwen2.5-1.5b-q4_0.gguf", MODELS_DIR / "qwen2.5-0.5b-q4_0.gguf"),

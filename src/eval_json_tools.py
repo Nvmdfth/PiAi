@@ -81,7 +81,8 @@ def run_single_eval(model_path, grammar_file=None, threads=3):
             "-t", str(threads),
             "--temp", "0.1",
             "--no-display-prompt",
-            "--no-conversation"
+            "-st",
+            "--simple-io"
         ]
         
         if grammar_file and Path(grammar_file).is_file():
@@ -99,16 +100,17 @@ def run_single_eval(model_path, grammar_file=None, threads=3):
         
         if res.returncode == 0:
             try:
-                # Strip markdown codeblocks if model added them
-                clean_str = re.sub(r"^```(?:json)?\s*", "", raw_output)
-                clean_str = re.sub(r"```$", "", clean_str).strip()
-                parsed_json = json.loads(clean_str)
-                is_valid_json = True
-                
-                if isinstance(parsed_json, dict):
-                    act = str(parsed_json.get("action", "")).lower()
-                    if act == item["expected_action"]:
-                        action_match = True
+                assistant_text = raw_output.split("<|im_start|>assistant")[-1] if "<|im_start|>assistant" in raw_output else raw_output
+                start_idx = assistant_text.find("{")
+                if start_idx != -1:
+                    decoder = json.JSONDecoder()
+                    parsed_json, _ = decoder.raw_decode(assistant_text[start_idx:])
+                    is_valid_json = True
+                    
+                    if isinstance(parsed_json, dict):
+                        act = str(parsed_json.get("action", "")).lower()
+                        if act == item["expected_action"]:
+                            action_match = True
             except Exception:
                 is_valid_json = False
 
