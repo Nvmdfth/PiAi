@@ -23,7 +23,7 @@ RUN cmake .. \
     -DLLAMA_BUILD_EXAMPLES=OFF \
     && cmake --build . --config Release -j2 --target llama-server
 
-# Runtime stage: Minimal non-root image
+# Runtime stage: Minimal turnkey image
 FROM debian:bookworm-slim AS runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -35,6 +35,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 COPY --from=builder /src/llama.cpp/build/bin/llama-server /usr/local/bin/llama-server
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 USER app
 
@@ -50,4 +52,4 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD curl -f http://127.0.0.1:8080/health || exit 1
 
-ENTRYPOINT ["/usr/local/bin/llama-server"]
+ENTRYPOINT ["/entrypoint.sh"]

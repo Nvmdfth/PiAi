@@ -17,7 +17,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./models:/models:ro
+      - ./models:/models
       - ./grammars:/grammars:ro
     environment:
       - LLAMA_ARG_MODEL=/models/qwen2.5-0.5b-q4_0.gguf
@@ -47,7 +47,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./models:/models:ro
+      - ./models:/models
       - ./grammars:/grammars:ro
     environment:
       - LLAMA_ARG_MODEL=/models/qwen2.5-1.5b-q4_0.gguf
