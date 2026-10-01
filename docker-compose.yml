@@ -19,6 +19,7 @@ services:
     volumes:
       - ./models:/models
       - ./grammars:/grammars:ro
+      - ./configs/webui_config.json:/configs/webui_config.json:ro
     environment:
       - LLAMA_ARG_MODEL=/models/qwen2.5-0.5b-q4_0.gguf
       - LLAMA_ARG_THREADS=3
@@ -31,6 +32,7 @@ services:
       - LLAMA_ARG_HOST=0.0.0.0
       - LLAMA_ARG_PORT=8080
       - LLAMA_ARG_MLOCK=1
+      - LLAMA_ARG_UI_CONFIG_FILE=/configs/webui_config.json
     profiles:
       - pi4
 
@@ -54,6 +56,7 @@ services:
     volumes:
       - ./models:/models
       - ./grammars:/grammars:ro
+      - ./configs/webui_config.json:/configs/webui_config.json:ro
     environment:
       - LLAMA_ARG_MODEL=/models/qwen2.5-1.5b-q4_0.gguf
       - LLAMA_ARG_THREADS=3
@@ -66,5 +69,6 @@ services:
       - LLAMA_ARG_HOST=0.0.0.0
       - LLAMA_ARG_PORT=8080
       - LLAMA_ARG_MLOCK=1
+      - LLAMA_ARG_UI_CONFIG_FILE=/configs/webui_config.json
     profiles:
       - pi5

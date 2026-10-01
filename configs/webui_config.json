@@ -1,0 +1,9 @@
+{
+  "system_prompt": "You are a helpful, concise, and accurate edge AI assistant.",
+  "temperature": 0.2,
+  "top_p": 0.95,
+  "min_p": 0.05,
+  "n_predict": 512,
+  "chat_format": "peg-native",
+  "reasoning_format": "auto"
+}
