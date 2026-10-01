@@ -7,6 +7,8 @@ services:
     container_name: piai-engine
     restart: unless-stopped
     cpuset: "0-2"
+    cap_add:
+      - IPC_LOCK
     ulimits:
       memlock:
         soft: -1
@@ -18,11 +20,12 @@ services:
       - ./models:/models:ro
       - ./grammars:/grammars:ro
     environment:
-      - MODEL_PATH=/models/qwen2.5-0.5b-q4_0.gguf
-      - THREADS=3
-      - CTX_SIZE=4096
-      - HOST=0.0.0.0
-      - PORT=8080
+      - LLAMA_ARG_MODEL=/models/qwen2.5-0.5b-q4_0.gguf
+      - LLAMA_ARG_THREADS=3
+      - LLAMA_ARG_CTX_SIZE=4096
+      - LLAMA_ARG_HOST=0.0.0.0
+      - LLAMA_ARG_PORT=8080
+      - LLAMA_ARG_MLOCK=1
     profiles:
       - pi4
 
@@ -34,6 +37,8 @@ services:
     container_name: piai-engine
     restart: unless-stopped
     cpuset: "0-2"
+    cap_add:
+      - IPC_LOCK
     ulimits:
       memlock:
         soft: -1
@@ -45,10 +50,11 @@ services:
       - ./models:/models:ro
       - ./grammars:/grammars:ro
     environment:
-      - MODEL_PATH=/models/qwen2.5-1.5b-q4_0.gguf
-      - THREADS=3
-      - CTX_SIZE=4096
-      - HOST=0.0.0.0
-      - PORT=8080
+      - LLAMA_ARG_MODEL=/models/qwen2.5-1.5b-q4_0.gguf
+      - LLAMA_ARG_THREADS=3
+      - LLAMA_ARG_CTX_SIZE=4096
+      - LLAMA_ARG_HOST=0.0.0.0
+      - LLAMA_ARG_PORT=8080
+      - LLAMA_ARG_MLOCK=1
     profiles:
       - pi5
