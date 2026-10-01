@@ -17,15 +17,12 @@ WORKDIR /src/llama.cpp/build
 RUN cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=OFF \
-    -DGGML_NATIVE=OFF \
-    -DGGML_CPU_ARM_ARCH=armv8.2-a+dotprod+fp16 \
-    -DGGML_CPU_KLEIDIAI=ON \
-    -DGGML_LTO=ON \
+    -DGGML_NATIVE=ON \
     -DGGML_OPENMP=ON \
     -DLLAMA_CURL=OFF \
     -DLLAMA_BUILD_TESTS=OFF \
     -DLLAMA_BUILD_EXAMPLES=OFF \
-    && cmake --build . --config Release -j4 --target llama-server
+    && cmake --build . --config Release -j2 --target llama-server
 
 # Runtime stage: Minimal turnkey image
 FROM debian:bookworm-slim AS runtime
