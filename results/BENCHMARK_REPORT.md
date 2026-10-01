@@ -1,6 +1,6 @@
 # Small Language Model (SLM) Benchmark Report
 
-*Generated on: 2026-09-30 22:25:34*
+*Generated on: 2026-09-30 22:42:40*
 
 ## 1. Executive Summary
 - Empirical benchmarks collected across native ARM NEON inference on Cortex-A72.
@@ -29,9 +29,9 @@
 ## 3. Headless JSON & Tool-Calling Reliability
 | Model | Unconstrained Valid % | Grammar Valid % | Action Match % | Avg Latency (s) |
 | :--- | :---: | :---: | :---: | :---: |
-| `qwen2.5-0.5b-q4_0.gguf` | 100.0% | **0.0%** | 0.0% | 3.365s |
-| `smollm2-135m-q4_0.gguf` | 0.0% | **0.0%** | 0.0% | 1.817s |
-| `qwen2.5-1.5b-q4_0.gguf` | 100.0% | **0.0%** | 0.0% | 3.483s |
+| `qwen2.5-0.5b-q4_0.gguf` | 100.0% | **100.0%** | 60.0% | 19.284s |
+| `smollm2-135m-q4_0.gguf` | 0.0% | **80.0%** | 40.0% | 10.156s |
+| `qwen2.5-1.5b-q4_0.gguf` | 100.0% | **100.0%** | 80.0% | 63.311s |
 
 
 ## 4. Prompt Caching & TTFT Acceleration
