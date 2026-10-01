@@ -9,21 +9,17 @@ env/
 dist/
 build/
 
-# Models & Large Artifacts
-models/*.gguf
-*.gguf
-*.bin
-*.pt
-*.safetensors
-prompt_cache/
-
-# llama.cpp build & submodule binaries
-llama.cpp/build/
-llama.cpp/bin/
+# llama.cpp source & build artifacts
+llama.cpp/
+build*/
 bin/
 *.o
 *.a
 *.so
+
+# Models & Large Artifacts
+models/*.gguf
+prompt_cache/
 
 # Logs & Benchmark raw data
 logs/

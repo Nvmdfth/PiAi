@@ -1,0 +1,16 @@
+root ::= "{\n"
+  "  \"action\": " action-type ",\n"
+  "  \"target\": " string ",\n"
+  "  \"parameters\": " object ",\n"
+  "  \"confidence\": " float "\n"
+"}"
+
+action-type ::= "\"read\"" | "\"write\"" | "\"restart\"" | "\"alert\"" | "\"status\""
+
+object ::= "{" ws ( string ":" ws value ("," ws string ":" ws value)* )? "}" ws
+value  ::= object | array | string | number | ("true" | "false" | "null") ws
+array  ::= "[" ws ( value ("," ws value)* )? "]" ws
+string ::= "\"" ([^"\\\x7F\x00-\x1F] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]))* "\"" ws
+number ::= ("-"? ([0-9] | [1-9] [0-9]*)) ("." [0-9]+)? ws
+float  ::= ("0" | "1") ("." [0-9]+)? ws
+ws     ::= ([ \t\n\r])*
