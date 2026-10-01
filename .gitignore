@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Models & Large Artifacts
+models/*.gguf
+*.gguf
+*.bin
+*.pt
+*.safetensors
+prompt_cache/
+
+# llama.cpp build & submodule binaries
+llama.cpp/build/
+llama.cpp/bin/
+bin/
+*.o
+*.a
+*.so
+
+# Logs & Benchmark raw data
+logs/
+results/raw/
+*.log
+.DS_Store
