@@ -14,6 +14,8 @@ declare -A MODEL_URLS=(
     ["qwen2.5-0.5b-q4_0"]="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_0.gguf"
     ["qwen2.5-1.5b-q4_0"]="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_0.gguf"
     ["qwen2.5-3b-q4_0"]="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_0.gguf"
+    ["qwen2.5-coder-0.5b-q4_0"]="https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-0.5b-instruct-q4_0.gguf"
+    ["qwen2.5-coder-1.5b-q4_0"]="https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_0.gguf"
     ["llama-3.2-1b-q4_0"]="https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_0.gguf"
 )
 
@@ -41,10 +43,12 @@ if [[ "${TARGET_KEY}" == "all" ]]; then
         download_model "${key}"
     done
 elif [[ "${TARGET_KEY}" == "fast" ]]; then
-    # Fast test tier (< 1.5GB total)
+    # Standard fast set
     download_model "smollm2-135m-q4_0"
     download_model "qwen2.5-0.5b-q4_0"
     download_model "qwen2.5-1.5b-q4_0"
+    download_model "qwen2.5-coder-0.5b-q4_0"
+    download_model "qwen2.5-coder-1.5b-q4_0"
 else
     if [[ -n "${MODEL_URLS[$TARGET_KEY]+set}" ]]; then
         download_model "${TARGET_KEY}"
