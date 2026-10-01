@@ -1,78 +1,50 @@
+x-common: &default-config
+  container_name: piai-engine
+  restart: unless-stopped
+  cpuset: "0-3"
+  stop_grace_period: 30s
+  cap_add:
+    - IPC_LOCK
+  ulimits:
+    memlock:
+      soft: -1
+      hard: -1
+  ports:
+    - "8080:8080"
+  volumes:
+    - ./models:/models
+    - ./configs/webui_config.json:/configs/webui_config.json:ro
+  environment:
+    - LLAMA_ARG_MODELS_DIR=/models
+    - LLAMA_ARG_MODELS_MAX=2
+    - LLAMA_ARG_MODELS_AUTOLOAD=1
+    - LLAMA_ARG_THREADS=3
+    - LLAMA_ARG_THREADS_BATCH=4
+    - LLAMA_ARG_UBATCH=512
+    - LLAMA_ARG_FLASH_ATTN=on
+    - LLAMA_ARG_CACHE_TYPE_K=q8_0
+    - LLAMA_ARG_CACHE_TYPE_V=q8_0
+    - LLAMA_ARG_CTX_SIZE=4096
+    - LLAMA_ARG_HOST=0.0.0.0
+    - LLAMA_ARG_PORT=8080
+    - LLAMA_ARG_MLOCK=1
+    - LLAMA_ARG_UI_CONFIG_FILE=/configs/webui_config.json
+
 services:
   # Raspberry Pi 4 Profile (Multi-Model Router)
   piai-pi4:
+    <<: *default-config
     build:
       context: .
       dockerfile: docker/Dockerfile.pi4
-    container_name: piai-engine
-    restart: unless-stopped
-    cpuset: "0-2"
-    cap_add:
-      - IPC_LOCK
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    ipc: host
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./models:/models
-      - ./grammars:/grammars:ro
-      - ./configs/webui_config.json:/configs/webui_config.json:ro
-    environment:
-      - LLAMA_ARG_MODELS_DIR=/models
-      - LLAMA_ARG_MODELS_MAX=2
-      - LLAMA_ARG_MODELS_AUTOLOAD=1
-      - LLAMA_ARG_THREADS=3
-      - LLAMA_ARG_THREADS_BATCH=4
-      - LLAMA_ARG_UBATCH=512
-      - LLAMA_ARG_FLASH_ATTN=on
-      - LLAMA_ARG_CACHE_TYPE_K=q8_0
-      - LLAMA_ARG_CACHE_TYPE_V=q8_0
-      - LLAMA_ARG_CTX_SIZE=4096
-      - LLAMA_ARG_HOST=0.0.0.0
-      - LLAMA_ARG_PORT=8080
-      - LLAMA_ARG_MLOCK=1
-      - LLAMA_ARG_UI_CONFIG_FILE=/configs/webui_config.json
     profiles:
       - pi4
 
   # Raspberry Pi 5 Profile (Multi-Model Router Production)
   piai-pi5:
+    <<: *default-config
     build:
       context: .
       dockerfile: docker/Dockerfile.pi5
-    container_name: piai-engine
-    restart: unless-stopped
-    cpuset: "0-2"
-    cap_add:
-      - IPC_LOCK
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    ipc: host
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./models:/models
-      - ./grammars:/grammars:ro
-      - ./configs/webui_config.json:/configs/webui_config.json:ro
-    environment:
-      - LLAMA_ARG_MODELS_DIR=/models
-      - LLAMA_ARG_MODELS_MAX=2
-      - LLAMA_ARG_MODELS_AUTOLOAD=1
-      - LLAMA_ARG_THREADS=3
-      - LLAMA_ARG_THREADS_BATCH=4
-      - LLAMA_ARG_UBATCH=512
-      - LLAMA_ARG_FLASH_ATTN=on
-      - LLAMA_ARG_CACHE_TYPE_K=q8_0
-      - LLAMA_ARG_CACHE_TYPE_V=q8_0
-      - LLAMA_ARG_CTX_SIZE=4096
-      - LLAMA_ARG_HOST=0.0.0.0
-      - LLAMA_ARG_PORT=8080
-      - LLAMA_ARG_MLOCK=1
-      - LLAMA_ARG_UI_CONFIG_FILE=/configs/webui_config.json
     profiles:
       - pi5

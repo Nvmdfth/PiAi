@@ -1,6 +1,8 @@
 # Build stage: Compile static llama.cpp for Raspberry Pi 5 (Cortex-A76 + DotProd + KleidiAI)
 FROM debian:bookworm-slim AS builder
 
+ARG LLAMA_TAG=master
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
     build-essential \
@@ -9,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
-RUN git clone --depth 1 https://github.com/ggerganov/llama.cpp.git /src/llama.cpp
+RUN git clone --depth 1 --branch ${LLAMA_TAG} https://github.com/ggerganov/llama.cpp.git /src/llama.cpp
 
 WORKDIR /src/llama.cpp/build
 RUN cmake .. \
@@ -33,16 +35,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     && rm -rf /var/lib/apt/lists/* \
-    && useradd -r -u 10001 -d /app app
+    && useradd -m -u 1000 -d /app app
 
 WORKDIR /app
 COPY --from=builder /src/llama.cpp/build/bin/llama-server /usr/local/bin/llama-server
 COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh && chown -R app:app /app
 
 USER app
 
 # Multi-Model Router & Server Binding
+ENV HOME=/app
 ENV LLAMA_ARG_HOST=0.0.0.0
 ENV LLAMA_ARG_PORT=8080
 ENV LLAMA_ARG_MODELS_DIR=/models
@@ -61,7 +64,7 @@ ENV LLAMA_ARG_MLOCK=1
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=300s --retries=3 \
   CMD curl -f http://127.0.0.1:8080/health || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]

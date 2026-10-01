@@ -3,7 +3,6 @@ set -e
 
 MODELS_DIR="${LLAMA_ARG_MODELS_DIR:-/models}"
 
-# If models directory is enabled, ensure standard suite models exist
 if [ -d "$MODELS_DIR" ]; then
     echo "Checking models in $MODELS_DIR..."
 
@@ -13,8 +12,19 @@ if [ -d "$MODELS_DIR" ]; then
         DEST="$MODELS_DIR/$NAME"
         if [ ! -f "$DEST" ]; then
             echo "Downloading $NAME from $URL..."
-            curl -L -C - -f -o "$DEST.tmp" "$URL"
-            mv "$DEST.tmp" "$DEST"
+            if curl -L -C - -f --retry 3 --retry-delay 3 --connect-timeout 15 -o "$DEST.tmp" "$URL"; then
+                # Verify GGUF magic header
+                if [ "$(head -c 4 "$DEST.tmp" 2>/dev/null)" = "GGUF" ]; then
+                    mv "$DEST.tmp" "$DEST"
+                    echo "Successfully downloaded $NAME"
+                else
+                    echo "Warning: Downloaded file $NAME did not match GGUF header. Removing temporary file."
+                    rm -f "$DEST.tmp"
+                fi
+            else
+                echo "Warning: Failed to download $NAME from $URL (network error). Skipping."
+                rm -f "$DEST.tmp"
+            fi
         fi
     }
 
@@ -22,6 +32,8 @@ if [ -d "$MODELS_DIR" ]; then
     download_if_missing "qwen2.5-coder-0.5b-q4_0.gguf" "https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-0.5b-instruct-q4_0.gguf"
     download_if_missing "qwen2.5-1.5b-q4_0.gguf" "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_0.gguf"
     download_if_missing "qwen2.5-coder-1.5b-q4_0.gguf" "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_0.gguf"
+else
+    echo "Warning: Models directory $MODELS_DIR does not exist. Skipping auto-download."
 fi
 
 echo "Starting llama-server multi-model router on port ${LLAMA_ARG_PORT:-8080}..."

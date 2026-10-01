@@ -1,0 +1,12 @@
+.git
+.gitignore
+models/
+*.gguf
+build*/
+bin/
+llama.cpp/
+logs/
+results/raw/
+prompt_cache/
+__pycache__/
+*.pyc
