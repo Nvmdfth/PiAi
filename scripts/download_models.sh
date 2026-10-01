@@ -17,6 +17,7 @@ declare -A MODEL_URLS=(
     ["qwen2.5-coder-0.5b-q4_0"]="https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-0.5b-instruct-q4_0.gguf"
     ["qwen2.5-coder-1.5b-q4_0"]="https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_0.gguf"
     ["llama-3.2-1b-q4_0"]="https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_0.gguf"
+    ["gemma-3-4b-it-q4_k_m"]="https://huggingface.co/unsloth/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf"
 )
 
 download_model() {
