@@ -41,6 +41,30 @@ Empirical benchmark suite and runtime architecture to prove and evaluate Small L
 
 ---
 
-## 4. Quick Start
+## 4. Quick Start & Benchmarking
 
-See [docs/BENCHMARK_SPEC.md](docs/BENCHMARK_SPEC.md) for full execution matrix and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for runtime setup.
+See [docs/BENCHMARK_SPEC.md](docs/BENCHMARK_SPEC.md) for the full execution matrix and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for native runtime setup.
+
+---
+
+## 5. Docker Compose Deployment
+
+The project includes multi-stage containerized deployments with dynamic multi-model routing and built-in WebUI.
+
+### Launch on Raspberry Pi 4 (Dev):
+```bash
+docker compose --profile pi4 up -d --build
+```
+
+### Launch on Raspberry Pi 5 (Prod):
+```bash
+docker compose --profile pi5 up -d --build
+```
+
+### Endpoints:
+* **Web UI**: Open `http://<pi-ip>:8080/` in your browser.
+* **OpenAI Chat API**: `http://<pi-ip>:8080/v1/chat/completions`
+* **Model Catalog**: `http://<pi-ip>:8080/v1/models`
+* **Health Check**: `http://<pi-ip>:8080/health`
+
+For configuration flags, GBNF tool calling, and resource tuning, see [docs/DOCKER_DEPLOYMENT.md](docs/DOCKER_DEPLOYMENT.md).
