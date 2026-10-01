@@ -1,9 +1,7 @@
 {
-  "system_prompt": "You are a helpful, concise, and accurate edge AI assistant.",
+  "system_prompt": "You are a concise edge coding and AI assistant. Provide correct, minimal, and working code or answers.",
   "temperature": 0.2,
   "top_p": 0.95,
   "min_p": 0.05,
-  "n_predict": 512,
-  "chat_format": "peg-native",
-  "reasoning_format": "auto"
+  "n_predict": 512
 }
