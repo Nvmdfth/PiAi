@@ -3,5 +3,9 @@
   "temperature": 0.2,
   "top_p": 0.95,
   "min_p": 0.05,
-  "n_predict": 512
+  "n_predict": 512,
+  "jsSandboxEnabled": false,
+  "symbolicMathEnabled": false,
+  "mcpServers": [],
+  "customJson": "{}"
 }

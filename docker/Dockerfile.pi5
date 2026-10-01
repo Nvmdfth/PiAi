@@ -40,7 +40,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 COPY --from=builder /src/llama.cpp/build/bin/llama-server /usr/local/bin/llama-server
 COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh && chown -R app:app /app
+COPY configs/ /configs/
+RUN chmod +x /entrypoint.sh && chown -R app:app /app /configs
 
 USER app
 
@@ -51,16 +52,8 @@ ENV LLAMA_ARG_PORT=8080
 ENV LLAMA_ARG_MODELS_DIR=/models
 ENV LLAMA_ARG_MODELS_MAX=2
 ENV LLAMA_ARG_MODELS_AUTOLOAD=1
-
-# Performance Tuning Defaults
-ENV LLAMA_ARG_THREADS=3
-ENV LLAMA_ARG_THREADS_BATCH=4
-ENV LLAMA_ARG_UBATCH=512
-ENV LLAMA_ARG_CTX_SIZE=4096
-ENV LLAMA_ARG_FLASH_ATTN=on
-ENV LLAMA_ARG_CACHE_TYPE_K=q8_0
-ENV LLAMA_ARG_CACHE_TYPE_V=q8_0
-ENV LLAMA_ARG_MLOCK=1
+ENV LLAMA_ARG_MODELS_PRESET=/configs/models_preset.ini
+ENV LLAMA_ARG_UI_CONFIG_FILE=/configs/webui_config.json
 
 EXPOSE 8080
 
