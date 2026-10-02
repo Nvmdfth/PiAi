@@ -26,3 +26,4 @@ logs/
 results/raw/
 *.log
 .DS_Store
+CLAUDE.md
