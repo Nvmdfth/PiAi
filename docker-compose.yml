@@ -32,6 +32,7 @@ services:
       - ./configs/webui_config.json:/configs/webui_config.json:ro
       - ./configs/models_preset_pi4.ini:/configs/models_preset.ini:ro
       - ./configs/templates:/configs/templates:ro
+      - ./slot_cache:/slots
     profiles:
       - pi4
 
@@ -46,5 +47,6 @@ services:
       - ./configs/webui_config.json:/configs/webui_config.json:ro
       - ./configs/models_preset_pi5.ini:/configs/models_preset.ini:ro
       - ./configs/templates:/configs/templates:ro
+      - ./slot_cache:/slots
     profiles:
       - pi5
