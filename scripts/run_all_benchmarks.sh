@@ -36,7 +36,7 @@ echo "--> Running JSON / Tool Calling Reliability Eval..."
 python3 "${ROOT_DIR}/src/eval_json_tools.py" --threads 3
 
 echo "--> Running Prompt Cache & TTFT Eval..."
-python3 "${ROOT_DIR}/src/eval_prompt_cache.py" --threads 3
+python3 "${ROOT_DIR}/src/eval_prompt_cache.py" || true
 
 echo "--> Running Speculative Decoding Eval..."
 python3 "${ROOT_DIR}/src/eval_speculative.py" --threads 3 || true

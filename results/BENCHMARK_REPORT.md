@@ -1,6 +1,6 @@
 # Small Language Model (SLM) Benchmark Report
 
-*Generated on: 2026-09-30 22:42:40*
+*Generated on: 2026-10-02 22:00:24*
 
 ## 1. Executive Summary
 - Empirical benchmarks collected across native ARM NEON inference on Cortex-A72.
@@ -37,9 +37,8 @@
 ## 4. Prompt Caching & TTFT Acceleration
 | Model | Cold Latency (s) | Warm Latency (s) | Cold Prompt (ms) | Warm Prompt (ms) | Speedup Factor |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| `qwen2.5-0.5b-q4_0.gguf` | 0.038s | **0.046s** | 0.0 | 0.0 | **0.82x** |
-| `smollm2-135m-q4_0.gguf` | 0.046s | **0.037s** | 0.0 | 0.0 | **1.26x** |
-| `qwen2.5-1.5b-q4_0.gguf` | 0.042s | **0.048s** | 0.0 | 0.0 | **0.88x** |
+| `qwen2.5-1.5b-q4_0` | 76.21s | **13.476s** | 66534.2 | 3514.1 | **5.66x** |
+| `qwen2.5-coder-1.5b-q4_0` | 100.908s | **15.247s** | 89334.4 | 4418.4 | **6.62x** |
 
 
 ## 5. Speculative Decoding Multiplier
