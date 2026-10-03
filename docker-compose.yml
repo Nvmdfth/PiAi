@@ -33,6 +33,7 @@ services:
       - ./configs/models_preset_pi4.ini:/configs/models_preset.ini:ro
       - ./configs/templates:/configs/templates:ro
       - ./slot_cache:/slots
+      - ./docker/entrypoint.sh:/entrypoint.sh:ro
     profiles:
       - pi4
 
@@ -48,5 +49,6 @@ services:
       - ./configs/models_preset_pi5.ini:/configs/models_preset.ini:ro
       - ./configs/templates:/configs/templates:ro
       - ./slot_cache:/slots
+      - ./docker/entrypoint.sh:/entrypoint.sh:ro
     profiles:
       - pi5

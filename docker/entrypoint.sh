@@ -42,5 +42,73 @@ else
     echo "Warning: Models directory $MODELS_DIR does not exist. Skipping auto-download."
 fi
 
+SLOT_DIR="/slots"
+API="http://127.0.0.1:${LLAMA_ARG_PORT:-8080}"
+
+# Persist each loaded model's busiest KV slot across restarts, so the first request
+# after a restart skips the cold prefix. A saved cache is only reused when the model
+# file and the preset (ctx size, KV type, ...) match what it was saved under.
+slot_fingerprint() {
+    echo "$(stat -c '%s-%Y' "$MODELS_DIR/$1.gguf" 2>/dev/null) $(md5sum < /configs/models_preset.ini | cut -d' ' -f1)"
+}
+
+loaded_models() {
+    curl -s -m 5 "$API/v1/models" | sed 's/{"id"/\n&/g' | grep '"value":"loaded"' \
+        | sed 's/^{"id":"\([^"]*\)".*/\1/'
+}
+
+# Prints "<prompt tokens> <slot id>" for the slot holding the longest prompt
+busiest_slot() {
+    curl -s -m 5 "$API/slots?model=$1" | sed 's/{"id":/\n&/g' \
+        | sed -n 's/^{"id":\([0-9]*\),.*"n_prompt_tokens":\([0-9]*\).*/\2 \1/p' | sort -n | tail -n 1
+}
+
+save_slots() {
+    [ -d "$SLOT_DIR" ] || return 0
+    for id in $(loaded_models); do
+        slot="$(busiest_slot "$id")"
+        [ -n "$slot" ] || continue
+        out="$(curl -s -m 20 -X POST "$API/slots/${slot#* }?action=save" -H 'Content-Type: application/json' \
+            -d "{\"model\":\"$id\",\"filename\":\"$id.bin\"}")"
+        case "$out" in
+            *n_saved*) slot_fingerprint "$id" > "$SLOT_DIR/$id.meta"; echo "slot cache saved: $id" ;;
+            *) echo "slot cache save failed: $id: $out" ;;
+        esac
+    done
+}
+
+restore_slots() {
+    until curl -sf -m 2 "$API/health" > /dev/null; do sleep 2; done
+    for meta in "$SLOT_DIR"/*.meta; do
+        [ -e "$meta" ] || return 0
+        id="$(basename "$meta" .meta)"
+        if [ "$(cat "$meta")" != "$(slot_fingerprint "$id")" ]; then
+            echo "slot cache stale, skipping: $id"
+            continue
+        fi
+        out="$(curl -s -m 600 -X POST "$API/slots/0?action=restore" -H 'Content-Type: application/json' \
+            -d "{\"model\":\"$id\",\"filename\":\"$id.bin\"}")"
+        case "$out" in
+            *n_restored*) echo "slot cache restored: $id" ;;
+            *) echo "slot cache restore failed: $id: $out" ;;
+        esac
+    done
+}
+
 echo "Starting llama-server multi-model router on port ${LLAMA_ARG_PORT:-8080}..."
-exec /usr/local/bin/llama-server "$@"
+/usr/local/bin/llama-server "$@" &
+SERVER_PID=$!
+
+restore_slots &
+RESTORE_PID=$!
+
+on_stop() {
+    kill "$RESTORE_PID" 2>/dev/null || true
+    save_slots
+    kill -TERM "$SERVER_PID" 2>/dev/null || true
+    wait "$SERVER_PID" || true
+    exit 0
+}
+trap on_stop TERM INT
+
+wait "$SERVER_PID"
