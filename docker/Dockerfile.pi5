@@ -38,12 +38,14 @@ WORKDIR /app
 COPY --from=builder /src/llama.cpp/build/bin/llama-server /usr/local/bin/llama-server
 COPY docker/entrypoint.sh /entrypoint.sh
 COPY configs/ /configs/
+COPY configs/models_preset_pi5.ini /configs/models_preset.ini
 RUN chmod +x /entrypoint.sh && chown -R app:app /app /configs
 
 USER app
 
 # Multi-Model Router & Server Binding
 ENV HOME=/app
+ENV PIAI_PROFILE=pi5
 ENV LLAMA_ARG_HOST=0.0.0.0
 ENV LLAMA_ARG_PORT=8080
 ENV LLAMA_ARG_MODELS_DIR=/models
