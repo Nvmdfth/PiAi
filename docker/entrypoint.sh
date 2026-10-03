@@ -28,7 +28,7 @@ if [ -d "$MODELS_DIR" ]; then
         fi
     }
 
-    # pi4 is limited to the 1.5B models plus the shared 0.5B draft; pi5 adds the rest
+    # pi4 serves the 1.5B models (the 0.5B file is kept but no longer used as a draft); pi5 adds the rest
     download_if_missing "qwen2.5-0.5b-q4_0.gguf" "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_0.gguf"
     download_if_missing "qwen2.5-1.5b-q4_0.gguf" "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_0.gguf"
     download_if_missing "qwen2.5-coder-1.5b-q4_0.gguf" "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_0.gguf"

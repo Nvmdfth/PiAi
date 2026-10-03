@@ -56,6 +56,18 @@ curl http://localhost:8080/completion \
 
 ## 3. Key Production Tuning in `docker-compose.yml`
 
-* `cpuset: "0-2"`: Dedicates physical CPU cores 0, 1, and 2 to LLM matrix computation while reserving core 3 for host system processes and Docker daemon networking.
+* `cpuset: "0-3"`: Pins the container to all four cores; the presets use 3 generation threads and 4 batch threads.
 * `ulimits.memlock: -1`: Bypasses default 64KB memory lock ceilings so `--mlock` can pin model weights directly into physical RAM.
 * `volumes`: GGUF weights are mounted from the host filesystem directly, enabling kernel zero-copy memory mapping (`mmap`).
+* `./slot_cache:/slots` + `slot-save-path = /slots` (in each preset): holds saved KV caches so a restart does not repeat the cold prefix (80-100 s for ~440 tokens on a Pi 4).
+
+## 4. Slot Cache Persistence
+
+`docker/entrypoint.sh` (bind-mounted over the image copy, so no rebuild is needed) manages the cache:
+
+* **Restore on start**: once `/health` is ok, each saved cache is restored. This also loads the models.
+* **Save on stop**: on SIGTERM (`docker compose stop/restart`) the busiest slot of every loaded model is saved.
+* **Periodic save**: every `SLOT_SAVE_INTERVAL` seconds (default `600`, `0` disables) so a crash keeps recent work. Busy models and unchanged slots are skipped.
+* **Stale guard**: each cache is stored with a fingerprint of the model file and the preset. Any preset edit or model change makes it skip the restore; the cache is rebuilt on use.
+* Files live in `slot_cache/` (git-ignored): `<model>.bin`, `.meta` (fingerprint), `.key` (change marker). Deleting them is safe.
+* Limits: one slot per model, graceful stops and periodic saves only (work newer than the last save is lost on a crash).

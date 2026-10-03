@@ -29,6 +29,7 @@ Status: `DONE` measured and decided · `RUNNING` in progress · `OPEN` not yet t
 | `slot-save-path` save/restore across a restart (general, 413-token prefix) | DONE | Cold request 92.6 s. After `docker compose restart`, restore took 6.5 ms and the next request took 6.0 s (19 tokens evaluated, 389 cached). Saved file 6.3 MB, save 25 ms. | Works, ~15x. Manual API calls only. |
 | Automatic slot save on stop / restore on start (`docker/entrypoint.sh`), both 1.5B models | DONE | Cold 81.0 s (general) / 98.8 s (coder) -> 5.7 s / 7.0 s after restart (389 tokens cached each). Both restored within ~25 s of the restart. Corrupted fingerprint: that model skipped as stale, the other restored. | Works. Entrypoint is bind-mounted in compose, so no image rebuild; a rebuild also picks it up. |
 | Periodic slot save (`SLOT_SAVE_INTERVAL`), general model | DONE | At a 30 s test interval, 3 idle cycles produced 1 save (unchanged slots skipped). After `docker kill` (SIGKILL) and start: restored, next request 4.8 s with 389 tokens cached, vs 83.0 s cold. | Works. Busy models are skipped each cycle. Coder not tested with periodic save. |
+| `--parallel 1` vs default 4 slots (general) | ABANDONED | Only the default config finished: RSS 1146 MB, 3.47 tok/s gen, 4.91 tok/s prefill (401 tokens); temp 67.2 -> 82.7 C, ended throttled. No comparison data. Server log: `n_slots = 4`, `kv_unified = true`, so extra slots likely share one KV buffer. | Open. Expect little gain; retest with thermal control. |
 
 ## Open
 

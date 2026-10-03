@@ -48,7 +48,7 @@ This activates:
          -m models/qwen2.5-1.5b-q4_0.gguf \
          --host 0.0.0.0 --port 8080 \
          -t 3 -c 4096 \
-         --mlock --prompt-cache prompt_cache/server_cache.bin
+         --mlock --slot-save-path slot_cache
      ```
 3. **Draft Speculative Pairings (For 3B+ Models)**:
    * Target: `Qwen2.5-3B-Instruct-Q4_0.gguf`
