@@ -57,21 +57,33 @@ loaded_models() {
         | sed 's/^{"id":"\([^"]*\)".*/\1/'
 }
 
-# Prints "<prompt tokens> <slot id>" for the slot holding the longest prompt
+# Prints "<prompt tokens> <slot id> <task id>" for the slot holding the longest prompt
 busiest_slot() {
     curl -s -m 5 "$API/slots?model=$1" | sed 's/{"id":/\n&/g' \
-        | sed -n 's/^{"id":\([0-9]*\),.*"n_prompt_tokens":\([0-9]*\).*/\2 \1/p' | sort -n | tail -n 1
+        | sed -n 's/^{"id":\([0-9]*\),.*"id_task":\([0-9]*\).*"n_prompt_tokens":\([0-9]*\).*/\3 \1 \2/p' | sort -n | tail -n 1
 }
 
+# "periodic" mode leaves busy models alone and skips slots unchanged since the last save
 save_slots() {
+    mode="$1"
     [ -d "$SLOT_DIR" ] || return 0
     for id in $(loaded_models); do
+        if [ "$mode" = periodic ] && curl -s -m 5 "$API/slots?model=$id" | grep -q '"is_processing":true'; then
+            continue
+        fi
         slot="$(busiest_slot "$id")"
         [ -n "$slot" ] || continue
-        out="$(curl -s -m 20 -X POST "$API/slots/${slot#* }?action=save" -H 'Content-Type: application/json' \
+        set -- $slot
+        [ "$1" -gt 0 ] || continue
+        key="$1 $2 $3"
+        if [ "$mode" = periodic ] && [ "$(cat "$SLOT_DIR/$id.key" 2>/dev/null)" = "$key" ]; then
+            continue
+        fi
+        out="$(curl -s -m 20 -X POST "$API/slots/$2?action=save" -H 'Content-Type: application/json' \
             -d "{\"model\":\"$id\",\"filename\":\"$id.bin\"}")"
         case "$out" in
-            *n_saved*) slot_fingerprint "$id" > "$SLOT_DIR/$id.meta"; echo "slot cache saved: $id" ;;
+            *n_saved*) slot_fingerprint "$id" > "$SLOT_DIR/$id.meta"; echo "$key" > "$SLOT_DIR/$id.key"
+                       echo "slot cache saved: $id" ;;
             *) echo "slot cache save failed: $id: $out" ;;
         esac
     done
@@ -95,6 +107,15 @@ restore_slots() {
     done
 }
 
+SLOT_SAVE_INTERVAL="${SLOT_SAVE_INTERVAL:-600}"
+
+# Saving only on a graceful stop loses everything after a crash or power loss
+periodic_save() {
+    [ "$SLOT_SAVE_INTERVAL" -gt 0 ] || return 0
+    until curl -sf -m 2 "$API/health" > /dev/null; do sleep 2; done
+    while sleep "$SLOT_SAVE_INTERVAL"; do save_slots periodic; done
+}
+
 echo "Starting llama-server multi-model router on port ${LLAMA_ARG_PORT:-8080}..."
 /usr/local/bin/llama-server "$@" &
 SERVER_PID=$!
@@ -102,8 +123,11 @@ SERVER_PID=$!
 restore_slots &
 RESTORE_PID=$!
 
+periodic_save &
+PERIODIC_PID=$!
+
 on_stop() {
-    kill "$RESTORE_PID" 2>/dev/null || true
+    kill "$RESTORE_PID" "$PERIODIC_PID" 2>/dev/null || true
     save_slots
     kill -TERM "$SERVER_PID" 2>/dev/null || true
     wait "$SERVER_PID" || true

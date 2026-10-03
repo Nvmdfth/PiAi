@@ -28,6 +28,7 @@ Status: `DONE` measured and decided · `RUNNING` in progress · `OPEN` not yet t
 | Speculative decoding at production sampling, coder | CONFOUNDED | off 2.60 vs n8 2.64 tok/s (+1.5%, within noise), seed 1. | Neutral at best, measured while hot. |
 | `slot-save-path` save/restore across a restart (general, 413-token prefix) | DONE | Cold request 92.6 s. After `docker compose restart`, restore took 6.5 ms and the next request took 6.0 s (19 tokens evaluated, 389 cached). Saved file 6.3 MB, save 25 ms. | Works, ~15x. Manual API calls only. |
 | Automatic slot save on stop / restore on start (`docker/entrypoint.sh`), both 1.5B models | DONE | Cold 81.0 s (general) / 98.8 s (coder) -> 5.7 s / 7.0 s after restart (389 tokens cached each). Both restored within ~25 s of the restart. Corrupted fingerprint: that model skipped as stale, the other restored. | Works. Entrypoint is bind-mounted in compose, so no image rebuild; a rebuild also picks it up. |
+| Periodic slot save (`SLOT_SAVE_INTERVAL`), general model | DONE | At a 30 s test interval, 3 idle cycles produced 1 save (unchanged slots skipped). After `docker kill` (SIGKILL) and start: restored, next request 4.8 s with 389 tokens cached, vs 83.0 s cold. | Works. Busy models are skipped each cycle. Coder not tested with periodic save. |
 
 ## Open
 
@@ -51,7 +52,7 @@ Ordered by expected value; cold prefill (~5-7 tok/s) is the dominant latency.
 - Router calls need `"model"` in the POST body; slot ids are not stable (the prompt landed in slot 3 of 4).
 - The server runs 4 parallel slots by default; `--parallel 1` may cut overhead and is untested.
 - Restored caches are untested after a changed model file, ctx size or KV type.
-- Caches are saved only on a graceful stop (SIGTERM, `docker compose stop/restart`). A crash, power loss or `kill -9` keeps whatever was saved last.
+- Periodic save every `SLOT_SAVE_INTERVAL` s (default 600, 0 = off) covers crashes, but anything newer than the last save is lost. Unchanged slots are not rewritten, to spare the SD card.
 - Only the busiest slot per loaded model is saved and restored (into slot 0); other slots are lost.
 - The stale-cache fingerprint hashes the whole preset, so any preset edit invalidates every saved cache (safe but conservative).
 - pi5 profile untested (config and mount edited only).

@@ -19,6 +19,7 @@ x-common: &default-config
     - LLAMA_ARG_MODELS_MAX=2
     - LLAMA_ARG_MODELS_AUTOLOAD=1
     - LLAMA_ARG_UI_CONFIG_FILE=/configs/webui_config.json
+    - SLOT_SAVE_INTERVAL=${SLOT_SAVE_INTERVAL:-600}
 
 services:
   # Raspberry Pi 4 Profile (Multi-Model Router)
